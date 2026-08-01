@@ -1,9 +1,50 @@
 import os
+import re
 from datetime import timedelta
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def _parse_csv_list(value: str) -> list[str]:
+    """Split a comma-separated env value into trimmed non-empty strings."""
+    if not value:
+        return []
+    return [part.strip() for part in value.split(",") if part.strip()]
+
+
+def _build_cors_origins() -> list:
+    """
+    Build Flask-CORS origins from env.
+
+    CORS_ORIGINS — exact origins (comma-separated), e.g.
+      http://localhost:3000,https://my-app.vercel.app
+
+    CORS_ORIGIN_REGEXES — optional regex patterns (comma-separated), e.g.
+      https://.*\\.vercel\\.app
+    Useful for Vercel preview URLs without listing every deployment.
+    Never use "*" here when sending credentials.
+    """
+    default_origins = (
+        "http://localhost:3000,http://127.0.0.1:3000,"
+        "http://localhost:3001,http://127.0.0.1:3001,"
+        "http://localhost:3002,http://127.0.0.1:3002,"
+        "https://amp-aif.vercel.app"
+    )
+    origins: list = _parse_csv_list(os.getenv("CORS_ORIGINS", default_origins))
+
+    # Reject wildcard when mixed with credentialed mode; keep list explicit.
+    origins = [o for o in origins if o != "*"]
+
+    for pattern in _parse_csv_list(os.getenv("CORS_ORIGIN_REGEXES", "")):
+        try:
+            origins.append(re.compile(pattern))
+        except re.error:
+            # Skip invalid patterns rather than crashing the app at boot
+            continue
+
+    return origins
 
 
 class Config:
@@ -27,14 +68,13 @@ class Config:
         "pool_recycle": 280,
     }
 
-    # Comma-separated list, e.g. http://localhost:3000,https://ampindiafoundation.org
-    CORS_ORIGINS = [
-        origin.strip()
-        for origin in os.getenv(
-            "CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
-        ).split(",")
-        if origin.strip()
-    ]
+    # Exact origins + optional regexes — see _build_cors_origins()
+    CORS_ORIGINS = _build_cors_origins()
+
+    # Auth is JWT in Authorization header (no cookie credentials on API calls)
+    CORS_SUPPORTS_CREDENTIALS = os.getenv(
+        "CORS_SUPPORTS_CREDENTIALS", "false"
+    ).lower() in ("1", "true", "yes", "on")
 
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=12)
 

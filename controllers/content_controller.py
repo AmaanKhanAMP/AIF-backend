@@ -82,7 +82,7 @@ def get_item(model, item_id, published_only=False):
     return jsonify({"success": True, "data": item.to_dict()}), 200
 
 
-def create_item(model, allowed_fields):
+def create_item(model, allowed_fields, resource=None):
     data = request.get_json(silent=True) or {}
     payload = {k: data.get(k) for k in allowed_fields if k in data}
     if "status" not in payload:
@@ -95,6 +95,23 @@ def create_item(model, allowed_fields):
             or 0
         )
         payload["display_order"] = max_order + 1
+
+    if resource:
+        from utils.content_field_limits import validate_content_payload
+
+        length_errors = validate_content_payload(resource, payload, partial=False)
+        if length_errors:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "Please fix the highlighted fields.",
+                        "errors": length_errors,
+                    }
+                ),
+                400,
+            )
+
     try:
         item = model(**payload)
         db.session.add(item)
@@ -106,14 +123,31 @@ def create_item(model, allowed_fields):
         return jsonify({"success": False, "message": str(exc)}), 500
 
 
-def update_item(model, item_id, allowed_fields):
+def update_item(model, item_id, allowed_fields, resource=None):
     item = _get_alive(model, item_id)
     if not item:
         return jsonify({"success": False, "message": "Not found."}), 404
     data = request.get_json(silent=True) or {}
-    for key in allowed_fields:
-        if key in data:
-            setattr(item, key, data[key])
+    payload = {k: data[k] for k in allowed_fields if k in data}
+
+    if resource:
+        from utils.content_field_limits import validate_content_payload
+
+        length_errors = validate_content_payload(resource, payload, partial=True)
+        if length_errors:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "Please fix the highlighted fields.",
+                        "errors": length_errors,
+                    }
+                ),
+                400,
+            )
+
+    for key, value in payload.items():
+        setattr(item, key, value)
     try:
         db.session.commit()
         _notify_chatbot(f"update:{model.__tablename__}")

@@ -89,16 +89,11 @@ def _export_cms_sources() -> Dict[str, str]:
     if len(home_parts) > 1:
         sources["cms_home"] = "\n\n".join(home_parts)
 
-    # Projects
+    # Projects (homepage carousel — title only; image is not useful for RAG text)
     project_parts: List[str] = ["# AMP India Foundation — Projects (CMS)"]
     for item in _published_rows(HomeProject):
         d = item.to_dict()
-        block = [
-            f"## Project: {d.get('title') or 'Untitled'}",
-            _line("Description", d.get("description")),
-            _line("Link", d.get("button_link")),
-        ]
-        project_parts.append("\n".join(x for x in block if x))
+        project_parts.append(f"## Project: {d.get('title') or 'Untitled'}")
     if len(project_parts) > 1:
         sources["cms_projects"] = "\n\n".join(project_parts)
 
@@ -125,17 +120,18 @@ def _export_cms_sources() -> Dict[str, str]:
     if len(event_parts) > 1:
         sources["cms_events"] = "\n\n".join(event_parts)
 
-    # Gallery
-    gallery_parts: List[str] = ["# AMP India Foundation — Gallery (CMS)"]
+    # Past Events
+    gallery_parts: List[str] = ["# AMP India Foundation — Past Events (CMS)"]
     for item in _published_rows(GalleryItem):
         d = item.to_dict()
         block = [
-            f"## Gallery item: {d.get('title') or 'Untitled'}",
+            f"## Past event: {d.get('title') or 'Untitled'}",
             _line("Description", d.get("description")),
             _line("Category", d.get("category")),
-            _line("Year", d.get("year")),
-            _line("Location", d.get("location")),
-            _line("Alt text", d.get("alt_text")),
+            _line("Date", d.get("event_date") or d.get("year")),
+            _line("Time", d.get("event_time")),
+            _line("Venue", d.get("venue") or d.get("location")),
+            _line("Link", d.get("registration_link")),
         ]
         gallery_parts.append("\n".join(x for x in block if x))
     if len(gallery_parts) > 1:

@@ -110,23 +110,45 @@ class HeroBanner(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
 
 
 class HomeProject(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
+    """Homepage Latest Projects carousel — image + title only."""
+
     __tablename__ = "home_projects"
 
     id = db.Column(db.Integer, primary_key=True)
     image_url = db.Column(db.String(500), nullable=False)
     title = db.Column(db.String(255), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    button_text = db.Column(db.String(100), nullable=True)
-    button_link = db.Column(db.String(500), nullable=True)
 
     def to_dict(self):
         return {
             "id": self.id,
             "image_url": self.image_url,
             "title": self.title,
+            "display_order": self.display_order,
+            "status": self.status,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            **self.soft_meta(),
+        }
+
+
+class HomeGalleryItem(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
+    """Homepage Photo Gallery tiles — image, alt, title, short description."""
+
+    __tablename__ = "home_gallery_items"
+
+    id = db.Column(db.Integer, primary_key=True)
+    image_url = db.Column(db.String(500), nullable=False)
+    alt_text = db.Column(db.String(255), nullable=False, default="")
+    title = db.Column(db.String(60), nullable=False, default="")
+    description = db.Column(db.String(120), nullable=False, default="")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "image_url": self.image_url,
+            "alt_text": self.alt_text,
+            "title": self.title,
             "description": self.description,
-            "button_text": self.button_text,
-            "button_link": self.button_link,
             "display_order": self.display_order,
             "status": self.status,
             "created_at": self.created_at.isoformat() if self.created_at else None,
@@ -268,6 +290,8 @@ class UpcomingEvent(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin)
 
 
 class GalleryItem(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
+    """Past Events on the Events page (EventCard grid). Table kept as gallery_items for compatibility."""
+
     __tablename__ = "gallery_items"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -275,6 +299,11 @@ class GalleryItem(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
     category = db.Column(db.String(100), nullable=True)
+    event_date = db.Column(db.String(100), nullable=True)
+    event_time = db.Column(db.String(100), nullable=True)
+    venue = db.Column(db.String(255), nullable=True)
+    registration_link = db.Column(db.String(500), nullable=True)
+    # Legacy gallery columns — retained for existing data / mapper fallbacks
     year = db.Column(db.String(20), nullable=True)
     location = db.Column(db.String(255), nullable=True)
     alt_text = db.Column(db.String(255), nullable=True)
@@ -286,9 +315,192 @@ class GalleryItem(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
             "title": self.title,
             "description": self.description,
             "category": self.category,
+            "event_date": self.event_date,
+            "event_time": self.event_time,
+            "venue": self.venue,
+            "registration_link": self.registration_link,
             "year": self.year,
             "location": self.location,
             "alt_text": self.alt_text,
+            "display_order": self.display_order,
+            "status": self.status,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            **self.soft_meta(),
+        }
+
+
+class SectionVisibility(db.Model, TimestampMixin):
+    """Homepage / page section show-hide flags (does not affect content rows)."""
+
+    __tablename__ = "section_visibility"
+
+    id = db.Column(db.Integer, primary_key=True)
+    section_name = db.Column(db.String(100), nullable=False, unique=True, index=True)
+    is_visible = db.Column(db.Boolean, nullable=False, default=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "section_name": self.section_name,
+            "is_visible": bool(self.is_visible),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class NavbarSettings(db.Model, TimestampMixin):
+    """Singleton brand/logo settings for the site navbar (one row)."""
+
+    __tablename__ = "navbar_settings"
+
+    id = db.Column(db.Integer, primary_key=True)
+    logo_url = db.Column(db.String(500), nullable=False, default="/assets/logo.png")
+    logo_alt = db.Column(db.String(120), nullable=False, default="AMP Logo")
+    logo_link = db.Column(db.String(500), nullable=False, default="/")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "logo_url": self.logo_url,
+            "logo_alt": self.logo_alt,
+            "logo_link": self.logo_link,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class NavbarItem(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
+    """Top-level nav links and dropdown children (mirrors Navbar.jsx)."""
+
+    __tablename__ = "navbar_items"
+
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String(80), nullable=False)
+    href = db.Column(db.String(500), nullable=False, default="/#")
+    # link = plain item; dropdown = parent with children (e.g. PROJECTS)
+    item_type = db.Column(db.String(20), nullable=False, default="link")
+    # Unique key for dropdown parents (children reference this via parent_key)
+    item_key = db.Column(db.String(80), nullable=True, index=True)
+    parent_key = db.Column(db.String(80), nullable=True, index=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "label": self.label,
+            "href": self.href,
+            "item_type": self.item_type,
+            "item_key": self.item_key,
+            "parent_key": self.parent_key,
+            "display_order": self.display_order,
+            "status": self.status,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            **self.soft_meta(),
+        }
+
+
+class FooterSettings(db.Model, TimestampMixin):
+    """Singleton footer copy/contact/social/CTA (mirrors Footer.jsx)."""
+
+    __tablename__ = "footer_settings"
+
+    id = db.Column(db.Integer, primary_key=True)
+    # Top CTA bar
+    cta_heading = db.Column(db.Text, nullable=False)
+    cta_button_text = db.Column(db.String(80), nullable=False)
+    cta_button_link = db.Column(db.String(500), nullable=False)
+    # About column
+    about_heading = db.Column(db.String(80), nullable=False)
+    about_text = db.Column(db.Text, nullable=False)
+    about_link_text = db.Column(db.String(80), nullable=False)
+    about_link_href = db.Column(db.String(500), nullable=False)
+    # Column headings
+    useful_links_heading = db.Column(db.String(80), nullable=False)
+    recent_focus_heading = db.Column(db.String(80), nullable=False)
+    contact_heading = db.Column(db.String(80), nullable=False)
+    # Contact details
+    address_label = db.Column(db.String(80), nullable=False)
+    address_text = db.Column(db.Text, nullable=False)
+    phone_label = db.Column(db.String(80), nullable=False)
+    phone_text = db.Column(db.String(80), nullable=False)
+    email_label = db.Column(db.String(80), nullable=False)
+    email_text = db.Column(db.String(120), nullable=False)
+    # Social
+    follow_heading = db.Column(db.String(80), nullable=False)
+    facebook_url = db.Column(db.String(500), nullable=False)
+    instagram_url = db.Column(db.String(500), nullable=False)
+    # Bottom bar
+    copyright_text = db.Column(db.String(255), nullable=False)
+    copyright_highlight = db.Column(db.String(120), nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "cta_heading": self.cta_heading,
+            "cta_button_text": self.cta_button_text,
+            "cta_button_link": self.cta_button_link,
+            "about_heading": self.about_heading,
+            "about_text": self.about_text,
+            "about_link_text": self.about_link_text,
+            "about_link_href": self.about_link_href,
+            "useful_links_heading": self.useful_links_heading,
+            "recent_focus_heading": self.recent_focus_heading,
+            "contact_heading": self.contact_heading,
+            "address_label": self.address_label,
+            "address_text": self.address_text,
+            "phone_label": self.phone_label,
+            "phone_text": self.phone_text,
+            "email_label": self.email_label,
+            "email_text": self.email_text,
+            "follow_heading": self.follow_heading,
+            "facebook_url": self.facebook_url,
+            "instagram_url": self.instagram_url,
+            "copyright_text": self.copyright_text,
+            "copyright_highlight": self.copyright_highlight,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class FooterLink(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
+    """Useful Links column items in Footer.jsx."""
+
+    __tablename__ = "footer_links"
+
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String(80), nullable=False)
+    href = db.Column(db.String(500), nullable=False, default="/")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "label": self.label,
+            "href": self.href,
+            "display_order": self.display_order,
+            "status": self.status,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            **self.soft_meta(),
+        }
+
+
+class FooterFocusItem(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
+    """Recent Focus column items in Footer.jsx."""
+
+    __tablename__ = "footer_focus_items"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(160), nullable=False)
+    href = db.Column(db.String(500), nullable=False, default="/")
+    date_label = db.Column(db.String(40), nullable=False, default="")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "href": self.href,
+            "date_label": self.date_label,
             "display_order": self.display_order,
             "status": self.status,
             "created_at": self.created_at.isoformat() if self.created_at else None,

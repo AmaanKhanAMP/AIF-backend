@@ -5,10 +5,14 @@ from flask import Blueprint
 from controllers import content_controller as cc
 from models.cms_models import (
     FeaturedEvent,
+    FooterFocusItem,
+    FooterLink,
     GalleryItem,
     HeroBanner,
     HomeEvent,
+    HomeGalleryItem,
     HomeProject,
+    NavbarItem,
     Testimonial,
     UpcomingEvent,
 )
@@ -32,9 +36,14 @@ HERO_FIELDS = [
 PROJECT_FIELDS = [
     "image_url",
     "title",
+    "display_order",
+    "status",
+]
+HOME_GALLERY_FIELDS = [
+    "image_url",
+    "alt_text",
+    "title",
     "description",
-    "button_text",
-    "button_link",
     "display_order",
     "status",
 ]
@@ -90,9 +99,32 @@ GALLERY_FIELDS = [
     "title",
     "description",
     "category",
-    "year",
-    "location",
-    "alt_text",
+    "event_date",
+    "event_time",
+    "venue",
+    "registration_link",
+    "display_order",
+    "status",
+]
+NAVBAR_ITEM_FIELDS = [
+    "label",
+    "href",
+    "item_type",
+    "item_key",
+    "parent_key",
+    "display_order",
+    "status",
+]
+FOOTER_LINK_FIELDS = [
+    "label",
+    "href",
+    "display_order",
+    "status",
+]
+FOOTER_FOCUS_FIELDS = [
+    "title",
+    "href",
+    "date_label",
     "display_order",
     "status",
 ]
@@ -108,10 +140,10 @@ def _register_resource(bp, prefix, model, fields):
         return cc.get_item(model, item_id)
 
     def create():
-        return cc.create_item(model, fields)
+        return cc.create_item(model, fields, resource=prefix)
 
     def update(item_id):
-        return cc.update_item(model, item_id, fields)
+        return cc.update_item(model, item_id, fields, resource=prefix)
 
     def delete(item_id):
         return cc.delete_item(model, item_id)
@@ -233,11 +265,15 @@ def trash_permanent(resource, item_id):
 
 _register_resource(admin_content_bp, "hero-banners", HeroBanner, HERO_FIELDS)
 _register_resource(admin_content_bp, "home-projects", HomeProject, PROJECT_FIELDS)
+_register_resource(admin_content_bp, "home-gallery", HomeGalleryItem, HOME_GALLERY_FIELDS)
 _register_resource(admin_content_bp, "home-events", HomeEvent, HOME_EVENT_FIELDS)
 _register_resource(admin_content_bp, "testimonials", Testimonial, TESTIMONIAL_FIELDS)
 _register_resource(admin_content_bp, "featured-events", FeaturedEvent, FEATURED_FIELDS)
 _register_resource(admin_content_bp, "upcoming-events", UpcomingEvent, UPCOMING_FIELDS)
 _register_resource(admin_content_bp, "gallery-items", GalleryItem, GALLERY_FIELDS)
+_register_resource(admin_content_bp, "navbar-items", NavbarItem, NAVBAR_ITEM_FIELDS)
+_register_resource(admin_content_bp, "footer-links", FooterLink, FOOTER_LINK_FIELDS)
+_register_resource(admin_content_bp, "footer-focus", FooterFocusItem, FOOTER_FOCUS_FIELDS)
 
 
 public_content_bp = Blueprint("public_content", __name__)
@@ -251,6 +287,11 @@ def public_hero():
 @public_content_bp.get("/home-projects")
 def public_projects():
     return cc.list_items(HomeProject, published_only=True)
+
+
+@public_content_bp.get("/home-gallery")
+def public_home_gallery():
+    return cc.list_items(HomeGalleryItem, published_only=True)
 
 
 @public_content_bp.get("/home-events")
@@ -276,3 +317,18 @@ def public_upcoming():
 @public_content_bp.get("/gallery-items")
 def public_gallery():
     return cc.list_items(GalleryItem, published_only=True)
+
+
+@public_content_bp.get("/navbar-items")
+def public_navbar_items():
+    return cc.list_items(NavbarItem, published_only=True)
+
+
+@public_content_bp.get("/footer-links")
+def public_footer_links():
+    return cc.list_items(FooterLink, published_only=True)
+
+
+@public_content_bp.get("/footer-focus")
+def public_footer_focus():
+    return cc.list_items(FooterFocusItem, published_only=True)

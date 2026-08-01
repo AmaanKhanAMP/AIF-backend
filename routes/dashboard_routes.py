@@ -7,10 +7,14 @@ from flask import Blueprint, current_app, jsonify
 from controllers import content_controller as cc
 from models.cms_models import (
     FeaturedEvent,
+    FooterFocusItem,
+    FooterLink,
     GalleryItem,
     HeroBanner,
     HomeEvent,
+    HomeGalleryItem,
     HomeProject,
+    NavbarItem,
     Testimonial,
     UpcomingEvent,
 )
@@ -23,11 +27,15 @@ dashboard_bp = Blueprint("dashboard", __name__)
 CONTENT_MODELS = [
     ("hero_banner", HeroBanner),
     ("home_project", HomeProject),
+    ("home_gallery", HomeGalleryItem),
     ("home_event", HomeEvent),
     ("testimonial", Testimonial),
     ("featured_event", FeaturedEvent),
     ("upcoming_event", UpcomingEvent),
     ("gallery_item", GalleryItem),
+    ("navbar_item", NavbarItem),
+    ("footer_link", FooterLink),
+    ("footer_focus", FooterFocusItem),
 ]
 
 
@@ -59,7 +67,13 @@ def _recent_updates(limit=8):
         for item in (
             _alive_query(model).order_by(model.updated_at.desc()).limit(limit).all()
         ):
-            title = getattr(item, "title", None) or getattr(item, "name", "Untitled")
+            title = (
+                getattr(item, "title", None)
+                or getattr(item, "name", None)
+                or getattr(item, "label", None)
+                or getattr(item, "alt_text", None)
+                or "Untitled"
+            )
             rows.append(
                 {
                     "type": label,
@@ -114,6 +128,7 @@ def stats():
                 "data": {
                     "hero_banners": _alive_query(HeroBanner).count(),
                     "home_projects": _alive_query(HomeProject).count(),
+                    "home_gallery": _alive_query(HomeGalleryItem).count(),
                     "home_events": _alive_query(HomeEvent).count(),
                     "testimonials": _alive_query(Testimonial).count(),
                     "featured_events": _alive_query(FeaturedEvent).count(),

@@ -18,10 +18,23 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     migrate.init_app(app, db)
+
+    # CORS: explicit origins only (never "*"). JWT auth uses Authorization
+    # header, so credentials are off by default — set CORS_SUPPORTS_CREDENTIALS
+    # if you later need cookie-based cross-origin auth.
     cors.init_app(
         app,
-        resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}},
-        supports_credentials=True,
+        resources={
+            r"/api/*": {
+                "origins": app.config["CORS_ORIGINS"],
+                "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+                "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+                "expose_headers": ["Content-Type"],
+                "supports_credentials": app.config["CORS_SUPPORTS_CREDENTIALS"],
+                "send_wildcard": False,
+                "always_send": True,
+            }
+        },
     )
 
     # Models must be imported so Flask-Migrate can detect them
@@ -38,6 +51,8 @@ def create_app(config_class=Config):
     from routes.dashboard_routes import dashboard_bp
     from routes.chat_routes import chat_bp
     from routes.chatbot_sync_routes import chatbot_sync_bp
+    from routes.section_visibility_routes import admin_sections_bp, public_sections_bp
+    from routes.layout_routes import admin_layout_bp, public_layout_bp
 
     app.register_blueprint(health_bp, url_prefix="/api")
     app.register_blueprint(contact_bp, url_prefix="/api/contact")
@@ -49,6 +64,10 @@ def create_app(config_class=Config):
     app.register_blueprint(dashboard_bp, url_prefix="/api/admin/dashboard")
     app.register_blueprint(chat_bp, url_prefix="/api/chat")
     app.register_blueprint(chatbot_sync_bp, url_prefix="/api/admin/chatbot")
+    app.register_blueprint(admin_sections_bp, url_prefix="/api/admin/sections")
+    app.register_blueprint(public_sections_bp, url_prefix="/api/sections")
+    app.register_blueprint(admin_layout_bp, url_prefix="/api/admin/layout")
+    app.register_blueprint(public_layout_bp, url_prefix="/api/layout")
 
     # Warm the chatbot knowledge cache once at startup (Phase 2)
     try:

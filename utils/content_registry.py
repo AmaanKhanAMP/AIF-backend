@@ -6,10 +6,14 @@ work automatically without rewriting controllers.
 
 from models.cms_models import (
     FeaturedEvent,
+    FooterFocusItem,
+    FooterLink,
     GalleryItem,
     HeroBanner,
     HomeEvent,
+    HomeGalleryItem,
     HomeProject,
+    NavbarItem,
     Testimonial,
     UpcomingEvent,
 )
@@ -26,6 +30,13 @@ CONTENT_RESOURCES = [
         "resource": "home-projects",
         "module": "Home Projects",
         "model": HomeProject,
+        "image_fields": ["image_url"],
+        "title_attr": "title",
+    },
+    {
+        "resource": "home-gallery",
+        "module": "Photo Gallery",
+        "model": HomeGalleryItem,
         "image_fields": ["image_url"],
         "title_attr": "title",
     },
@@ -59,9 +70,30 @@ CONTENT_RESOURCES = [
     },
     {
         "resource": "gallery-items",
-        "module": "Gallery",
+        "module": "Past Events",
         "model": GalleryItem,
         "image_fields": ["image_url"],
+        "title_attr": "title",
+    },
+    {
+        "resource": "navbar-items",
+        "module": "Navbar",
+        "model": NavbarItem,
+        "image_fields": [],
+        "title_attr": "label",
+    },
+    {
+        "resource": "footer-links",
+        "module": "Footer Links",
+        "model": FooterLink,
+        "image_fields": [],
+        "title_attr": "label",
+    },
+    {
+        "resource": "footer-focus",
+        "module": "Footer Focus",
+        "model": FooterFocusItem,
+        "image_fields": [],
         "title_attr": "title",
     },
 ]

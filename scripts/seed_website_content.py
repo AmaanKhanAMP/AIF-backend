@@ -21,12 +21,19 @@ from app import create_app
 from extensions import db
 from models.cms_models import (
     FeaturedEvent,
+    FooterFocusItem,
+    FooterLink,
+    FooterSettings,
     GalleryItem,
     HeroBanner,
     HomeEvent,
+    HomeGalleryItem,
     HomeProject,
+    NavbarItem,
+    NavbarSettings,
     Testimonial,
     UpcomingEvent,
+    utcnow,
 )
 
 # ── Content extracted from frontend/components (canonical App Router) ─────────
@@ -79,35 +86,68 @@ HERO_BANNERS = [
 HOME_PROJECTS = [
     {
         "title": "ACE - Academy for Competitive Exams",
-        "description": "Premium coaching and mentorship for competitive exam aspirants.",
         "image_url": "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=600&q=80",
-        "button_text": "View Project",
-        "button_link": "/projects",
         "display_order": 1,
     },
     {
         "title": "AMP Employment Assistance Cell",
-        "description": "Connecting skilled youth with employers through training and job fairs.",
         "image_url": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80",
-        "button_text": "View Project",
-        "button_link": "/projects",
         "display_order": 2,
     },
     {
         "title": "National Talent Search (NTS)",
-        "description": "Identifying and nurturing talented students across India.",
         "image_url": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
-        "button_text": "View Project",
-        "button_link": "/projects",
         "display_order": 3,
     },
     {
         "title": "AMP Higher Education Scholarship",
-        "description": "Scholarships enabling meritorious students to pursue higher education.",
         "image_url": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80",
-        "button_text": "View Project",
-        "button_link": "/projects",
         "display_order": 4,
+    },
+]
+
+HOME_GALLERY = [
+    {
+        "image_url": "https://images.unsplash.com/photo-1692269725836-fbd72e98883f?auto=format&fit=crop&w=900&q=80",
+        "alt_text": "Indian schoolchildren seated together in a classroom learning session",
+        "title": "Classroom Learning",
+        "description": "Students engaged together in a supported classroom learning session.",
+        "display_order": 1,
+    },
+    {
+        "image_url": "https://images.unsplash.com/photo-1692269725911-87697c558be1?auto=format&fit=crop&w=900&q=80",
+        "alt_text": "Two young Indian girls studying at a school desk with notebooks",
+        "title": "Focused Study Time",
+        "description": "Young learners building strong foundations through guided study.",
+        "display_order": 2,
+    },
+    {
+        "image_url": "https://images.unsplash.com/photo-1692269725827-699e04a11cdf?auto=format&fit=crop&w=900&q=80",
+        "alt_text": "Indian boys reading and studying together during an education support session",
+        "title": "Reading Together",
+        "description": "Peer learning and reading support during an education session.",
+        "display_order": 3,
+    },
+    {
+        "image_url": "https://images.unsplash.com/photo-1522661067900-ab829854a57f?auto=format&fit=crop&w=900&q=80",
+        "alt_text": "Indian teacher volunteering at a chalkboard to guide students in class",
+        "title": "Volunteer Teaching",
+        "description": "Dedicated volunteers guiding students through classroom lessons.",
+        "display_order": 4,
+    },
+    {
+        "image_url": "https://images.unsplash.com/photo-1759738098462-90ffac98c554?auto=format&fit=crop&w=900&q=80",
+        "alt_text": "Rural Indian women engaged in a livelihood weaving and skill development program",
+        "title": "Livelihood Skills",
+        "description": "Women building sustainable livelihoods through skill development.",
+        "display_order": 5,
+    },
+    {
+        "image_url": "https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&w=900&q=80",
+        "alt_text": "Indian children learning outdoors during a community education outreach program",
+        "title": "Community Outreach",
+        "description": "Outdoor learning moments from our community education programs.",
+        "display_order": 6,
     },
 ]
 
@@ -384,56 +424,80 @@ UPCOMING_EVENTS = [
 GALLERY_ITEMS = [
     {
         "title": "National Job Fair 2025",
-        "year": "2025",
-        "location": "Mumbai",
+        "event_date": "15 Mar 2025",
+        "event_time": "9:00 AM – 5:00 PM",
+        "venue": "Mumbai",
         "image_url": "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?auto=format&fit=crop&w=600&q=80",
         "category": "Employment",
-        "alt_text": "National Job Fair 2025",
+        "description": (
+            "A large-scale placement drive connecting skilled youth with corporate "
+            "employers across manufacturing, IT, and services."
+        ),
         "display_order": 1,
     },
     {
         "title": "Medical Relief Camp",
-        "year": "2025",
-        "location": "Hyderabad",
+        "event_date": "22 Jun 2025",
+        "event_time": "8:00 AM – 2:00 PM",
+        "venue": "Hyderabad",
         "image_url": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80",
         "category": "Medical Camp",
-        "alt_text": "Medical Relief Camp",
+        "description": (
+            "Free health check-ups, screenings, and medical relief support delivered "
+            "to underserved neighbourhoods."
+        ),
         "display_order": 2,
     },
     {
-        "title": "Scholarship Distribution",
-        "year": "2024",
-        "location": "Delhi",
+        "title": "Scholarship Distribution Ceremony",
+        "event_date": "10 Dec 2024",
+        "event_time": "11:00 AM – 1:00 PM",
+        "venue": "Delhi",
         "image_url": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80",
         "category": "Education",
-        "alt_text": "Scholarship Distribution",
+        "description": (
+            "Recognising meritorious students and awarding scholarships to support "
+            "higher education pathways."
+        ),
         "display_order": 3,
     },
     {
         "title": "Skill Training Graduation",
-        "year": "2024",
-        "location": "Bengaluru",
+        "event_date": "18 Sep 2024",
+        "event_time": "10:00 AM – 12:30 PM",
+        "venue": "Bengaluru",
         "image_url": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80",
         "category": "Skill Development",
-        "alt_text": "Skill Training Graduation",
+        "description": (
+            "Celebrating graduates of vocational programs in digital skills, "
+            "tailoring, and entrepreneurship."
+        ),
         "display_order": 4,
     },
     {
         "title": "Mentorship Summit",
-        "year": "2024",
-        "location": "Pune",
+        "event_date": "05 Aug 2024",
+        "event_time": "10:00 AM – 4:00 PM",
+        "venue": "Pune",
         "image_url": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80",
         "category": "Career Guidance",
-        "alt_text": "Mentorship Summit",
+        "description": (
+            "Industry mentors guided students through academic choices, resume "
+            "building, and career planning."
+        ),
         "display_order": 5,
     },
     {
         "title": "Community Upliftment Drive",
-        "year": "2023",
-        "location": "Kolkata",
+        "event_date": "12 Nov 2023",
+        "event_time": "9:30 AM – 1:30 PM",
+        "venue": "Kolkata",
         "image_url": "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?auto=format&fit=crop&w=600&q=80",
         "category": "Community Outreach",
-        "alt_text": "Community Upliftment Drive",
+        "description": (
+            "Grassroots outreach with essential supplies, financial literacy "
+            "workshops, and self-help group support."
+        ),
         "display_order": 6,
     },
 ]
@@ -462,17 +526,130 @@ def seed_collection(label, model, items, match_key: str, name_key: str = "title"
     print(f"  {label}: {created} created, {updated} updated ({len(items)} total)")
 
 
+NAVBAR_ITEMS = [
+    {"label": "HOME", "href": "/home", "item_type": "link", "item_key": None, "parent_key": None, "display_order": 1},
+    {"label": "ABOUT US", "href": "/about", "item_type": "link", "item_key": None, "parent_key": None, "display_order": 2},
+    {"label": "PROJECTS", "href": "/projects/education", "item_type": "dropdown", "item_key": "projects", "parent_key": None, "display_order": 3},
+    {"label": "Education", "href": "/projects/education", "item_type": "link", "item_key": None, "parent_key": "projects", "display_order": 4},
+    {"label": "Medical Relief", "href": "/projects/medical", "item_type": "link", "item_key": None, "parent_key": "projects", "display_order": 5},
+    {"label": "Employment Support", "href": "/projects/employment", "item_type": "link", "item_key": None, "parent_key": "projects", "display_order": 6},
+    {"label": "Economic Empowerment", "href": "/projects/empowerment", "item_type": "link", "item_key": None, "parent_key": "projects", "display_order": 7},
+    {"label": "Student Mentorship", "href": "/projects/mentorship", "item_type": "link", "item_key": None, "parent_key": "projects", "display_order": 8},
+    {"label": "Employment Training", "href": "/projects/training", "item_type": "link", "item_key": None, "parent_key": "projects", "display_order": 9},
+    {"label": "EVENTS", "href": "/events", "item_type": "link", "item_key": None, "parent_key": None, "display_order": 10},
+    {"label": "VOLUNTEER", "href": "/volunteer", "item_type": "link", "item_key": None, "parent_key": None, "display_order": 11},
+    {"label": "SUPPORT US", "href": "/support-us", "item_type": "link", "item_key": None, "parent_key": None, "display_order": 12},
+    {"label": "CONTACT", "href": "/contact", "item_type": "link", "item_key": None, "parent_key": None, "display_order": 13},
+]
+
+FOOTER_LINKS = [
+    {"label": "Home", "href": "/", "display_order": 1},
+    {"label": "About Us", "href": "/about", "display_order": 2},
+    {"label": "What We Do", "href": "/what-we-do", "display_order": 3},
+    {"label": "Projects", "href": "/projects", "display_order": 4},
+    {"label": "Events", "href": "/events", "display_order": 5},
+    {"label": "Join Us / Volunteer", "href": "/volunteer", "display_order": 6},
+    {"label": "Support Us", "href": "/support-us", "display_order": 7},
+    {"label": "Contact", "href": "/contact", "display_order": 8},
+    {"label": "Terms & Conditions", "href": "/terms-and-conditions", "display_order": 9},
+]
+
+FOOTER_FOCUS = [
+    {"title": "National Talent Search Examination", "href": "/projects/education", "date_label": "July 2026", "display_order": 1},
+    {"title": "Employability Training Programs", "href": "/projects/training", "date_label": "June 2026", "display_order": 2},
+    {"title": "Higher Education Scholarship Distribution", "href": "/projects/education", "date_label": "May 2026", "display_order": 3},
+]
+
+FOOTER_SETTINGS = {
+    "cta_heading": "Join Our Mission to Empower Lives Through Education & Employment.",
+    "cta_button_text": "BECOME A VOLUNTEER",
+    "cta_button_link": "/volunteer",
+    "about_heading": "ABOUT US",
+    "about_text": (
+        "AMP India Foundation is a non-profit organization dedicated to regularise "
+        "and scale up socio-economic development welfare activities. We empower "
+        "underprivileged youth through sustainable educational models, rigorous training, "
+        "and professional mentorship."
+    ),
+    "about_link_text": "READ MORE →",
+    "about_link_href": "/about",
+    "useful_links_heading": "USEFUL LINKS",
+    "recent_focus_heading": "RECENT FOCUS",
+    "contact_heading": "GET IN TOUCH",
+    "address_label": "📍 Address:",
+    "address_text": "AMP India Foundation, Mumbai, Maharashtra, India.",
+    "phone_label": "📞 Phone:",
+    "phone_text": "+91 93200 60093",
+    "email_label": "✉️ Email:",
+    "email_text": "info@ampindia.org",
+    "follow_heading": "FOLLOW US",
+    "facebook_url": "https://www.facebook.com/ampindiafoundation/",
+    "instagram_url": "https://www.instagram.com/ampindiafoundation/",
+    "copyright_text": "Copyrights © 2026 All Rights Reserved. Powered by ",
+    "copyright_highlight": "AMP India Foundation",
+}
+
+
+def seed_navbar_settings():
+    row = NavbarSettings.query.order_by(NavbarSettings.id.asc()).first()
+    payload = {
+        "logo_url": "/assets/logo.png",
+        "logo_alt": "AMP Logo",
+        "logo_link": "/",
+    }
+    if row:
+        for key, value in payload.items():
+            setattr(row, key, value)
+        print("  Navbar settings: updated")
+    else:
+        db.session.add(NavbarSettings(**payload, created_at=utcnow(), updated_at=utcnow()))
+        print("  Navbar settings: created")
+
+
+def seed_footer_settings():
+    row = FooterSettings.query.order_by(FooterSettings.id.asc()).first()
+    if row:
+        for key, value in FOOTER_SETTINGS.items():
+            setattr(row, key, value)
+        print("  Footer settings: updated")
+    else:
+        db.session.add(FooterSettings(**FOOTER_SETTINGS, created_at=utcnow(), updated_at=utcnow()))
+        print("  Footer settings: created")
+
+
+def seed_navbar_items():
+    created = updated = 0
+    for item in NAVBAR_ITEMS:
+        filters = {"label": item["label"], "href": item["href"]}
+        if item.get("parent_key"):
+            filters["parent_key"] = item["parent_key"]
+        else:
+            filters["parent_key"] = None
+        action = upsert(NavbarItem, filters, item)
+        if action == "created":
+            created += 1
+        else:
+            updated += 1
+    print(f"  Navbar items: {created} created, {updated} updated ({len(NAVBAR_ITEMS)} total)")
+
+
 def main():
     app = create_app()
     with app.app_context():
         print("Seeding website content into MySQL…")
         seed_collection("Hero banners", HeroBanner, HERO_BANNERS, "title")
         seed_collection("Home projects", HomeProject, HOME_PROJECTS, "title")
+        seed_collection("Home gallery", HomeGalleryItem, HOME_GALLERY, "alt_text")
         seed_collection("Home events", HomeEvent, HOME_EVENTS, "title")
         seed_collection("Testimonials", Testimonial, TESTIMONIALS, "name", "name")
         seed_collection("Featured events", FeaturedEvent, FEATURED_EVENTS, "title")
         seed_collection("Upcoming events", UpcomingEvent, UPCOMING_EVENTS, "title")
-        seed_collection("Gallery items", GalleryItem, GALLERY_ITEMS, "title")
+        seed_collection("Past events", GalleryItem, GALLERY_ITEMS, "title")
+        seed_navbar_settings()
+        seed_navbar_items()
+        seed_footer_settings()
+        seed_collection("Footer links", FooterLink, FOOTER_LINKS, "label")
+        seed_collection("Footer focus", FooterFocusItem, FOOTER_FOCUS, "title")
         db.session.commit()
         print("Done. All seeded items are status=published.")
 
