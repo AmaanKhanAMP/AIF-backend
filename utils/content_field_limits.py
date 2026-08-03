@@ -17,7 +17,6 @@ FIELD_LIMITS: dict[str, dict[str, int]] = {
         "title": 48,
         "title_accent": 24,
         "subtitle": 160,
-        "description": 160,
         "primary_btn_text": 22,
         "primary_btn_link": URL_MAX,
         "secondary_btn_text": 22,
@@ -39,7 +38,6 @@ FIELD_LIMITS: dict[str, dict[str, int]] = {
         "description": 180,
         "venue": 50,
         "event_date": 32,
-        "event_time": 28,
         "speaker": 40,
         "registration_link": URL_MAX,
         "button_text": 22,
@@ -60,7 +58,6 @@ FIELD_LIMITS: dict[str, dict[str, int]] = {
         "event_date": 32,
         "event_time": 28,
         "category": 24,
-        "registration_link": URL_MAX,
         "banner_image": IMAGE_URL_MAX,
     },
     "upcoming-events": {
@@ -68,9 +65,7 @@ FIELD_LIMITS: dict[str, dict[str, int]] = {
         "description": 120,
         "venue": 50,
         "event_date": 32,
-        "event_time": 28,
         "category": 24,
-        "registration_link": URL_MAX,
         "image_url": IMAGE_URL_MAX,
     },
     "past-events": {
@@ -79,9 +74,7 @@ FIELD_LIMITS: dict[str, dict[str, int]] = {
         "description": 380,
         "category": 24,
         "event_date": 32,
-        "event_time": 28,
         "venue": 50,
-        "registration_link": URL_MAX,
         "image_url": IMAGE_URL_MAX,
     },
     # Legacy slug alias
@@ -90,9 +83,7 @@ FIELD_LIMITS: dict[str, dict[str, int]] = {
         "description": 380,
         "category": 24,
         "event_date": 32,
-        "event_time": 28,
         "venue": 50,
-        "registration_link": URL_MAX,
         "image_url": IMAGE_URL_MAX,
     },
     "navbar-items": {

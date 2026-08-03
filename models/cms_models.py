@@ -83,6 +83,7 @@ class HeroBanner(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
     title = db.Column(db.String(255), nullable=False)
     title_accent = db.Column(db.String(120), nullable=True)
     subtitle = db.Column(db.Text, nullable=True)
+    # Legacy column — kept for existing rows; CMS/API no longer write this field.
     description = db.Column(db.Text, nullable=True)
     primary_btn_text = db.Column(db.String(100), nullable=True)
     primary_btn_link = db.Column(db.String(500), nullable=True)
@@ -96,7 +97,6 @@ class HeroBanner(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
             "title": self.title,
             "title_accent": self.title_accent,
             "subtitle": self.subtitle,
-            "description": self.description,
             "primary_btn_text": self.primary_btn_text,
             "primary_btn_link": self.primary_btn_link,
             "secondary_btn_text": self.secondary_btn_text,
@@ -168,6 +168,7 @@ class HomeEvent(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
     description = db.Column(db.Text, nullable=True)
     venue = db.Column(db.String(255), nullable=True)
     event_date = db.Column(db.String(100), nullable=True)
+    # Legacy column — kept for existing rows; CMS/API no longer write this field.
     event_time = db.Column(db.String(100), nullable=True)
     registration_link = db.Column(db.String(500), nullable=True)
     button_text = db.Column(db.String(100), nullable=True)
@@ -181,7 +182,6 @@ class HomeEvent(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
             "description": self.description,
             "venue": self.venue,
             "event_date": self.event_date,
-            "event_time": self.event_time,
             "registration_link": self.registration_link,
             "button_text": self.button_text,
             "speaker": self.speaker,
@@ -234,6 +234,7 @@ class FeaturedEvent(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin)
     event_date = db.Column(db.String(100), nullable=True)
     event_time = db.Column(db.String(100), nullable=True)
     category = db.Column(db.String(100), nullable=True)
+    # Legacy column — kept for existing rows; CMS/API no longer write this field.
     registration_link = db.Column(db.String(500), nullable=True)
 
     def to_dict(self):
@@ -246,7 +247,6 @@ class FeaturedEvent(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin)
             "event_date": self.event_date,
             "event_time": self.event_time,
             "category": self.category,
-            "registration_link": self.registration_link,
             "display_order": self.display_order,
             "status": self.status,
             "created_at": self.created_at.isoformat() if self.created_at else None,
@@ -266,6 +266,7 @@ class UpcomingEvent(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin)
     description = db.Column(db.Text, nullable=True)
     venue = db.Column(db.String(255), nullable=True)
     event_date = db.Column(db.String(100), nullable=True)
+    # Legacy columns — kept for existing rows; CMS/API no longer write these fields.
     event_time = db.Column(db.String(100), nullable=True)
     category = db.Column(db.String(100), nullable=True)
     registration_link = db.Column(db.String(500), nullable=True)
@@ -278,9 +279,7 @@ class UpcomingEvent(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin)
             "description": self.description,
             "venue": self.venue,
             "event_date": self.event_date,
-            "event_time": self.event_time,
             "category": self.category,
-            "registration_link": self.registration_link,
             "display_order": self.display_order,
             "status": self.status,
             "created_at": self.created_at.isoformat() if self.created_at else None,
@@ -304,6 +303,7 @@ class PastEvent(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
     description = db.Column(db.Text, nullable=True)
     category = db.Column(db.String(100), nullable=True)
     event_date = db.Column(db.String(100), nullable=True)
+    # Legacy columns — kept for existing rows; CMS/API no longer write these fields.
     event_time = db.Column(db.String(100), nullable=True)
     venue = db.Column(db.String(255), nullable=True)
     registration_link = db.Column(db.String(500), nullable=True)
@@ -320,9 +320,7 @@ class PastEvent(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
             "description": self.description,
             "category": self.category,
             "event_date": self.event_date,
-            "event_time": self.event_time,
             "venue": self.venue,
-            "registration_link": self.registration_link,
             "year": self.year,
             "location": self.location,
             "alt_text": self.alt_text,

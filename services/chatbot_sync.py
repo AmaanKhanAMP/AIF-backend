@@ -83,7 +83,6 @@ def _export_cms_sources() -> Dict[str, str]:
             _line("Title", d.get("title")),
             _line("Accent", d.get("title_accent")),
             _line("Subtitle", d.get("subtitle")),
-            _line("Description", d.get("description")),
         ]
         home_parts.append("\n".join(x for x in block if x))
     if len(home_parts) > 1:
@@ -111,10 +110,10 @@ def _export_cms_sources() -> Dict[str, str]:
                 _line("Description", d.get("description")),
                 _line("Venue", d.get("venue")),
                 _line("Date", d.get("event_date")),
-                _line("Time", d.get("event_time")),
+                # Featured still uses event_time; home/upcoming do not.
+                _line("Time", d.get("event_time")) if model is FeaturedEvent else None,
                 _line("Category", d.get("category")),
                 _line("Speaker", d.get("speaker")),
-                _line("Registration", d.get("registration_link")),
             ]
             event_parts.append("\n".join(x for x in block if x))
     if len(event_parts) > 1:
@@ -129,9 +128,7 @@ def _export_cms_sources() -> Dict[str, str]:
             _line("Description", d.get("description")),
             _line("Category", d.get("category")),
             _line("Date", d.get("event_date") or d.get("year")),
-            _line("Time", d.get("event_time")),
             _line("Venue", d.get("venue") or d.get("location")),
-            _line("Link", d.get("registration_link")),
         ]
         gallery_parts.append("\n".join(x for x in block if x))
     if len(gallery_parts) > 1:

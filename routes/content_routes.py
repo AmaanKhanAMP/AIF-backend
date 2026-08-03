@@ -25,7 +25,6 @@ HERO_FIELDS = [
     "title",
     "title_accent",
     "subtitle",
-    "description",
     "primary_btn_text",
     "primary_btn_link",
     "secondary_btn_text",
@@ -53,7 +52,6 @@ HOME_EVENT_FIELDS = [
     "description",
     "venue",
     "event_date",
-    "event_time",
     "registration_link",
     "button_text",
     "speaker",
@@ -78,7 +76,6 @@ FEATURED_FIELDS = [
     "event_date",
     "event_time",
     "category",
-    "registration_link",
     "display_order",
     "status",
 ]
@@ -88,9 +85,7 @@ UPCOMING_FIELDS = [
     "description",
     "venue",
     "event_date",
-    "event_time",
     "category",
-    "registration_link",
     "display_order",
     "status",
 ]
@@ -100,9 +95,7 @@ PAST_EVENT_FIELDS = [
     "description",
     "category",
     "event_date",
-    "event_time",
     "venue",
-    "registration_link",
     "display_order",
     "status",
 ]
