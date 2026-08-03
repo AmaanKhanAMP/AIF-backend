@@ -8,12 +8,12 @@ from models.cms_models import (
     FeaturedEvent,
     FooterFocusItem,
     FooterLink,
-    GalleryItem,
     HeroBanner,
     HomeEvent,
     HomeGalleryItem,
     HomeProject,
     NavbarItem,
+    PastEvent,
     Testimonial,
     UpcomingEvent,
 )
@@ -69,9 +69,17 @@ CONTENT_RESOURCES = [
         "title_attr": "title",
     },
     {
+        "resource": "past-events",
+        "module": "Past Events",
+        "model": PastEvent,
+        "image_fields": ["image_url"],
+        "title_attr": "title",
+    },
+    # Legacy slug — same model/table (kept for trash restore of older deletes)
+    {
         "resource": "gallery-items",
         "module": "Past Events",
-        "model": GalleryItem,
+        "model": PastEvent,
         "image_fields": ["image_url"],
         "title_attr": "title",
     },

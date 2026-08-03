@@ -7,12 +7,12 @@ from models.cms_models import (
     FeaturedEvent,
     FooterFocusItem,
     FooterLink,
-    GalleryItem,
     HeroBanner,
     HomeEvent,
     HomeGalleryItem,
     HomeProject,
     NavbarItem,
+    PastEvent,
     Testimonial,
     UpcomingEvent,
 )
@@ -94,7 +94,7 @@ UPCOMING_FIELDS = [
     "display_order",
     "status",
 ]
-GALLERY_FIELDS = [
+PAST_EVENT_FIELDS = [
     "image_url",
     "title",
     "description",
@@ -106,6 +106,8 @@ GALLERY_FIELDS = [
     "display_order",
     "status",
 ]
+# Legacy alias
+GALLERY_FIELDS = PAST_EVENT_FIELDS
 NAVBAR_ITEM_FIELDS = [
     "label",
     "href",
@@ -270,7 +272,9 @@ _register_resource(admin_content_bp, "home-events", HomeEvent, HOME_EVENT_FIELDS
 _register_resource(admin_content_bp, "testimonials", Testimonial, TESTIMONIAL_FIELDS)
 _register_resource(admin_content_bp, "featured-events", FeaturedEvent, FEATURED_FIELDS)
 _register_resource(admin_content_bp, "upcoming-events", UpcomingEvent, UPCOMING_FIELDS)
-_register_resource(admin_content_bp, "gallery-items", GalleryItem, GALLERY_FIELDS)
+_register_resource(admin_content_bp, "past-events", PastEvent, PAST_EVENT_FIELDS)
+# Legacy admin slug (same PastEvent / gallery_items table)
+_register_resource(admin_content_bp, "gallery-items", PastEvent, PAST_EVENT_FIELDS)
 _register_resource(admin_content_bp, "navbar-items", NavbarItem, NAVBAR_ITEM_FIELDS)
 _register_resource(admin_content_bp, "footer-links", FooterLink, FOOTER_LINK_FIELDS)
 _register_resource(admin_content_bp, "footer-focus", FooterFocusItem, FOOTER_FOCUS_FIELDS)
@@ -314,9 +318,15 @@ def public_upcoming():
     return cc.list_items(UpcomingEvent, published_only=True)
 
 
+@public_content_bp.get("/past-events")
+def public_past_events():
+    return cc.list_items(PastEvent, published_only=True)
+
+
 @public_content_bp.get("/gallery-items")
 def public_gallery():
-    return cc.list_items(GalleryItem, published_only=True)
+    """Legacy alias — same data as /past-events."""
+    return cc.list_items(PastEvent, published_only=True)
 
 
 @public_content_bp.get("/navbar-items")

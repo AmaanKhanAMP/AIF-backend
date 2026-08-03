@@ -289,8 +289,12 @@ class UpcomingEvent(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin)
         }
 
 
-class GalleryItem(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
-    """Past Events on the Events page (EventCard grid). Table kept as gallery_items for compatibility."""
+class PastEvent(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
+    """Past Events on the Events page (EventCard grid).
+
+    Table name remains gallery_items so existing Railway/MySQL data is preserved.
+    Public/admin API resource slug is past-events.
+    """
 
     __tablename__ = "gallery_items"
 
@@ -328,6 +332,10 @@ class GalleryItem(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixin):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             **self.soft_meta(),
         }
+
+
+# Backward-compatible alias (older imports / scripts)
+GalleryItem = PastEvent
 
 
 class SectionVisibility(db.Model, TimestampMixin):

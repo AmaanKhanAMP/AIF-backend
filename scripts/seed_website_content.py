@@ -24,7 +24,7 @@ from models.cms_models import (
     FooterFocusItem,
     FooterLink,
     FooterSettings,
-    GalleryItem,
+    PastEvent,
     HeroBanner,
     HomeEvent,
     HomeGalleryItem,
@@ -644,7 +644,7 @@ def main():
         seed_collection("Testimonials", Testimonial, TESTIMONIALS, "name", "name")
         seed_collection("Featured events", FeaturedEvent, FEATURED_EVENTS, "title")
         seed_collection("Upcoming events", UpcomingEvent, UPCOMING_EVENTS, "title")
-        seed_collection("Past events", GalleryItem, GALLERY_ITEMS, "title")
+        seed_collection("Past events", PastEvent, GALLERY_ITEMS, "title")
         seed_navbar_settings()
         seed_navbar_items()
         seed_footer_settings()

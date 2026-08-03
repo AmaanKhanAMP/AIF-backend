@@ -64,7 +64,7 @@ def _export_cms_sources() -> Dict[str, str]:
     """Build source_name → plain-text documents from published CMS rows."""
     from models.cms_models import (
         FeaturedEvent,
-        GalleryItem,
+        PastEvent,
         HeroBanner,
         HomeEvent,
         HomeProject,
@@ -122,7 +122,7 @@ def _export_cms_sources() -> Dict[str, str]:
 
     # Past Events
     gallery_parts: List[str] = ["# AMP India Foundation — Past Events (CMS)"]
-    for item in _published_rows(GalleryItem):
+    for item in _published_rows(PastEvent):
         d = item.to_dict()
         block = [
             f"## Past event: {d.get('title') or 'Untitled'}",

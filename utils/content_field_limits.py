@@ -73,8 +73,19 @@ FIELD_LIMITS: dict[str, dict[str, int]] = {
         "registration_link": URL_MAX,
         "image_url": IMAGE_URL_MAX,
     },
-    "gallery-items": {
+    "past-events": {
         # Past Events card body — fuller CMS copy (~3–4 lines on card)
+        "title": 60,
+        "description": 380,
+        "category": 24,
+        "event_date": 32,
+        "event_time": 28,
+        "venue": 50,
+        "registration_link": URL_MAX,
+        "image_url": IMAGE_URL_MAX,
+    },
+    # Legacy slug alias
+    "gallery-items": {
         "title": 60,
         "description": 380,
         "category": 24,
@@ -142,6 +153,7 @@ FIELD_LABELS: dict[str, str] = {
 REQUIRED_FIELDS: dict[str, list[str]] = {
     "home-projects": ["image_url", "title"],
     "home-gallery": ["image_url", "alt_text", "title", "description"],
+    "past-events": ["image_url", "title", "description"],
     "gallery-items": ["image_url", "title", "description"],
     "navbar-items": ["label", "href", "item_type"],
     "footer-links": ["label", "href"],
@@ -170,7 +182,7 @@ def validate_content_lengths(resource: str, payload: dict) -> dict[str, str]:
             continue
         if len(value) > max_len:
             label = FIELD_LABELS.get(field, field.replace("_", " ").title())
-            if resource == "gallery-items" and field == "description":
+            if resource in ("past-events", "gallery-items") and field == "description":
                 label = "Past Event Description"
             errors[field] = f"{label} must be at most {max_len} characters."
 
@@ -194,7 +206,7 @@ def validate_required_fields(resource: str, payload: dict, *, partial: bool = Fa
         text = "" if value is None else str(value).strip()
         if not text:
             label = FIELD_LABELS.get(field, field.replace("_", " ").title())
-            if resource == "gallery-items" and field == "description":
+            if resource in ("past-events", "gallery-items") and field == "description":
                 label = "Past Event Description"
             errors[field] = f"{label} is required."
 
