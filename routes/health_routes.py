@@ -14,13 +14,12 @@ def health_check():
             jsonify({"status": "success", "database": "Connected"}),
             200,
         )
-    except Exception as exc:
+    except Exception:
         return (
             jsonify(
                 {
                     "status": "error",
                     "database": "Disconnected",
-                    "detail": str(exc),
                 }
             ),
             503,

@@ -21,6 +21,17 @@ def sync_chatbot_now():
     return jsonify(result), status
 
 
+@chatbot_sync_bp.post("/rebuild")
+@admin_required
+def rebuild_chatbot_now():
+    """Force CMS + website snapshots into Pinecone and drop legacy sources."""
+    from services.chatbot_sync import run_chatbot_sync
+
+    result = run_chatbot_sync(reason="rebuild_admin", force=True)
+    status = 200 if result.get("success") else 502
+    return jsonify(result), status
+
+
 @chatbot_sync_bp.get("/status")
 @admin_required
 def sync_status():

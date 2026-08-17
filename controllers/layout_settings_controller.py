@@ -189,6 +189,15 @@ def get_navbar_settings():
         return jsonify({"success": False, "message": str(exc)}), 500
 
 
+def _notify_chatbot(reason: str) -> None:
+    try:
+        from services.chatbot_sync import schedule_chatbot_sync
+
+        schedule_chatbot_sync(reason=reason)
+    except Exception:
+        pass
+
+
 def update_navbar_settings():
     payload = request.get_json(silent=True) or {}
     data = {k: payload.get(k) for k in NAVBAR_FIELDS if k in payload}
@@ -205,6 +214,7 @@ def update_navbar_settings():
             setattr(row, key, str(value).strip())
         row.updated_at = utcnow()
         db.session.commit()
+        _notify_chatbot("update:navbar_settings")
         return jsonify(
             {
                 "success": True,
@@ -256,6 +266,7 @@ def update_footer_settings():
             setattr(row, key, str(value).strip() if value is not None else "")
         row.updated_at = utcnow()
         db.session.commit()
+        _notify_chatbot("update:footer_settings")
         return jsonify(
             {
                 "success": True,

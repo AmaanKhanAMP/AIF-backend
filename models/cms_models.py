@@ -140,7 +140,7 @@ class HomeGalleryItem(db.Model, TimestampMixin, PublishableMixin, SoftDeleteMixi
     image_url = db.Column(db.String(500), nullable=False)
     alt_text = db.Column(db.String(255), nullable=False, default="")
     title = db.Column(db.String(60), nullable=False, default="")
-    description = db.Column(db.String(120), nullable=False, default="")
+    description = db.Column(db.String(280), nullable=False, default="")
 
     def to_dict(self):
         return {

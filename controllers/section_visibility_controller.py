@@ -84,6 +84,12 @@ def update_visibility(section_name: str):
         row.is_visible = parsed
         row.updated_at = utcnow()
         db.session.commit()
+        try:
+            from services.chatbot_sync import schedule_chatbot_sync
+
+            schedule_chatbot_sync(reason=f"visibility:{section_name}:{parsed}")
+        except Exception:
+            pass
         label = section_label(section_name)
         message = (
             f"{label} section is now visible."
