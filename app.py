@@ -4,6 +4,7 @@ import shutil
 from pathlib import Path
 
 from flask import Flask, jsonify, send_from_directory
+from werkzeug.exceptions import NotFound
 
 from config import Config
 from extensions import db, migrate, cors
@@ -110,7 +111,10 @@ def create_app(config_class=Config):
 
     @app.get("/uploads/<path:filepath>")
     def serve_uploads(filepath):
-        return send_from_directory(app.config["UPLOAD_FOLDER"], filepath)
+        try:
+            return send_from_directory(app.config["UPLOAD_FOLDER"], filepath)
+        except NotFound:
+            return send_from_directory(Path(app.root_path) / "homepage_media", filepath)
 
     @app.errorhandler(404)
     def not_found(_error):
