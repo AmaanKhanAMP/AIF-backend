@@ -1,11 +1,40 @@
 """AMP India Foundation — Flask API application factory."""
 
+import shutil
 from pathlib import Path
 
 from flask import Flask, jsonify, send_from_directory
 
 from config import Config
 from extensions import db, migrate, cors
+
+# Homepage CMS records point at stable filenames under /uploads/. Those files
+# live in homepage_media/ because uploads/ is gitignored and Render's disk is
+# ephemeral. Copy only if the destination is missing so CMS uploads are kept.
+_HOMEPAGE_MEDIA_FOLDERS = (
+    "hero-banners",
+    "home-projects",
+    "home-gallery",
+    "home-events",
+    "upcoming-events",
+)
+
+
+def _restore_homepage_media(upload_root: Path, app_root: Path) -> None:
+    seed_root = app_root / "homepage_media"
+    if not seed_root.is_dir():
+        return
+    for folder in _HOMEPAGE_MEDIA_FOLDERS:
+        src_dir = seed_root / folder
+        if not src_dir.is_dir():
+            continue
+        dest_dir = upload_root / folder
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        for src in src_dir.iterdir():
+            if src.is_file():
+                dest = dest_dir / src.name
+                if not dest.exists():
+                    shutil.copy2(src, dest)
 
 
 def create_app(config_class=Config):
@@ -15,6 +44,7 @@ def create_app(config_class=Config):
     upload_root = Path(app.root_path) / "uploads"
     upload_root.mkdir(parents=True, exist_ok=True)
     app.config["UPLOAD_FOLDER"] = str(upload_root)
+    _restore_homepage_media(upload_root, Path(app.root_path))
 
     db.init_app(app)
     migrate.init_app(app, db)
